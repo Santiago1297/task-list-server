@@ -9,7 +9,6 @@ const tasks = [
     isCompleted: false,
     description: 'Walk the dog',
   },
-  // Puedes agregar más tareas aquí
 ];
 
 app.get('/tasks', (req, res) => {
