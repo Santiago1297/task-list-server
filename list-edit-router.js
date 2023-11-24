@@ -17,7 +17,8 @@ const tasks = [
 
 // Ruta para crear una nueva tarea (POST)
 router.post('/', (req, res) => {
-  const { description } = req.body;
+  console.log(req.body);
+  const description = req.body.description;
 
   if (!description) {
     return res.status(400).json({ error: 'La descripción de la tarea es obligatoria' });

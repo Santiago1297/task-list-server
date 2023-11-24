@@ -6,6 +6,12 @@ const port = 3000;
 const listViewRouter = require('./list-view-router');
 const listEditRouter = require('./list-edit-router');
 
+app.use(express.json());
+
+// Se asocia el enrutador de List View Router y List Edit Router
+app.use('/view', listViewRouter);
+app.use('/edit', listEditRouter);
+
 // Lista de tareas
 const tasks = [
   {
@@ -21,13 +27,9 @@ const tasks = [
 ];
 
 // Ruta principal para listar todas las tareas
-app.get('/tasks', (req, res) => {
+app.get('/', (req, res) => {
   res.json(tasks);
 });
-
-// Se asocia el enrutador de List View Router y List Edit Router
-app.use('/listview', listViewRouter);
-app.use('/tasks/edit', listEditRouter);
 
 app.listen(port, () => {
   console.log(`Servidor Express escuchando en el puerto ${port}`);
