@@ -15,14 +15,27 @@ const tasks = [
   },
 ];
 
+// Middleware para gestionar errores en solicitudes POST y PUT
+router.use((req, res, next) => {
+  if ((req.method === 'POST' || req.method === 'PUT') && Object.keys(req.body).length === 0) {
+    return res.status(400).json({ error: 'Cuerpo de la solicitud vacío' });
+  }
+
+  const { description } = req.body;
+  if (req.method === 'POST' && (!description || typeof description !== 'string')) {
+    return res.status(400).json({ error: 'Información no válida o atributos faltantes para crear las tareas' });
+  }
+
+  next();
+});
+
 // Ruta para crear una nueva tarea (POST)
 router.post('/', (req, res) => {
-  console.log(req.body);
   const description = req.body.description;
 
-  if (!description) {
-    return res.status(400).json({ error: 'La descripción de la tarea es obligatoria' });
-  }
+  // if (!description) {
+  //   return res.status(400).json({ error: 'La descripción de la tarea es obligatoria' });
+  // }
   
   const newTask = {
     id: Math.random().toString(), // Se genera un ID aleatorio
@@ -54,7 +67,7 @@ router.put('/:id', (req, res) => {
   const task = tasks.find(task => task.id === taskId);
 
   if (!task) {
-    return res.status(404).json({ error: 'Tarea no encontrada.' });
+    return res.status(404).json({ error: 'Tarea no encontrada' });
   }
 
   if (description) {

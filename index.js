@@ -6,6 +6,15 @@ const port = 3000;
 const listViewRouter = require('./list-view-router');
 const listEditRouter = require('./list-edit-router');
 
+// Middleware para gestionar solicitudes por métodos HTTP válidos
+app.use((req, res, next) => {
+  if (req.method === 'GET' || req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
+    next();
+  } else {
+    res.status(400).json({ error: 'Método HTTP no válido' });
+  }
+});
+
 app.use(express.json());
 
 // Se asocia el enrutador de List View Router y List Edit Router

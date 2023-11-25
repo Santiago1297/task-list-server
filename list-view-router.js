@@ -15,6 +15,18 @@ const tasks = [
   },
 ];
 
+// Middleware para gestionar errores en parámetros de la ruta
+router.use((req, res, next) => {
+  const validParams = ['completed', 'incomplete'];
+  const param = req.params[0];
+
+  if (!validParams.includes(param)) {
+    return res.status(400).json({ error: 'Parámetros de la ruta incorrectos' });
+  }
+
+  next();
+});
+
 // Ruta para listar tareas completas
 router.get('/completed', (req, res) => {
   const completedTasks = tasks.filter(task => task.isCompleted === true);
