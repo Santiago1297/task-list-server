@@ -1,67 +1,68 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
-dotenv.config();
-
 const app = express();
-const port = 3000;
-
-// Importa el enrutador de listas
-const listViewRouter = require('./list-view-router');
-const listEditRouter = require('./list-edit-router');
-const authRouter = require('./auth-router');
-
-// Middleware para gestionar solicitudes por métodos HTTP válidos
-app.use((req, res, next) => {
-  if (req.method === 'GET' || req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
-    next();
-  } else {
-    res.status(400).json({ error: 'Método HTTP no válido' });
-  }
-});
+const PORT = 3000;
 
 app.use(express.json());
 
-// Middleware para proteger rutas con JWT
-app.use('/protected', authenticateToken);
-
-// Se asocia el enrutador de List View Router y List Edit Router
-app.use('/view', listViewRouter);
-app.use('/edit', listEditRouter);
-app.use('/login', authRouter);
-
 // Lista de tareas
-const tasks = [
-  {
-    id: '123456',
-    isCompleted: false,
-    description: 'Walk the dog',
-  },
-  {
-    id: '234567',
-    isCompleted: true,
-    description: 'Study React',
-  },
+let tasks = [
+  { id: 1, description: 'Sacar al perro', completed: false },
+  { id: 2, description: 'Estudiar React', completed: true },
 ];
 
-// Ruta principal para listar todas las tareas
-app.get('/', (req, res) => {
-  res.json(tasks);
+// Crear una nueva tarea
+app.post('/tasks', (req, res) => {
+  const { description } = req.body;
+  const newTask = { id: tasks.length + 1, description, completed: false };
+  tasks.push(newTask);
+  res.status(201).json(newTask);
 });
 
-app.listen(port, () => {
-  console.log(`Servidor Express escuchando en el puerto ${port}`);
+// Actualizar una tarea
+app.put('/tasks/:id', (req, res) => {
+  const taskId = parseInt(req.params.id);
+  const task = tasks.find(task => task.id === taskId);
+
+  if (!task) {
+    res.status(404).json({ error: 'Tarea no encontrada' });
+  } else {
+    task.description = req.body.description || task.description;
+    task.completed = req.body.completed || task.completed;
+    res.status(200).json(task);
+  }
 });
 
-// Middleware para verificar el token JWT
-function authenticateToken(req, res, next) {
-  const token = req.header('Authorization');
-  if (!token) return res.status(401).json({ error: 'Acceso no autorizado' });
+// Eliminar una tarea
+app.delete('/tasks/:id', (req, res) => {
+  const taskId = parseInt(req.params.id);
+  tasks = tasks.filter(task => task.id !== taskId);
+  res.status(204).end();
+});
 
-  jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Token no válido' });
+// Listar todas las tareas
+app.get('/tasks', (req, res) => {
+  res.status(200).json(tasks);
+});
 
-    req.user = user;
-    next();
-  });
-}
+// Obtener tareas completas e incompletas
+app.get('/tasks/completed', (req, res) => {
+  const completedTasks = tasks.filter(task => task.completed);
+  const incompleteTasks = tasks.filter(task => !task.completed);
+  res.status(200).json({ completed: completedTasks, incomplete: incompleteTasks });
+});
+
+// Obtener una sola tarea
+app.get('/tasks/:id', (req, res) => {
+  const taskId = parseInt(req.params.id);
+  const task = tasks.find(task => task.id === taskId);
+
+  if (!task) {
+    res.status(404).json({ error: 'Tarea no encontrada' });
+  } else {
+    res.status(200).json(task);
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Servidor escuchando en el puerto ${PORT}`);
+});
